@@ -1,6 +1,7 @@
 package com.soten.search.data.db
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy.REPLACE
 import androidx.room.Query
@@ -17,4 +18,7 @@ interface MovieDao {
 
     @Insert(onConflict = REPLACE)
     fun insertQueryEntity(queryEntity: QueryEntity)
+
+    @Delete
+    fun deleteQueryEntity(queryEntity: QueryEntity)
 }
