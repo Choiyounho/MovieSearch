@@ -1,22 +1,21 @@
 package com.soten.search.ui
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.soten.search.databinding.ActivityMainBinding
 import com.soten.search.extension.clicks
 import com.soten.search.extension.throttleFirst
 import com.soten.search.ui.adapter.MovieAdapter
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -37,8 +36,8 @@ class MainActivity : AppCompatActivity() {
 
     private val movieAdapter by lazy {
         MovieAdapter {
-            val intent = Intent(this, RecordActivity::class.java)
-            launch.launch(intent)
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it.link))
+            startActivity(intent)
         }
     }
 
@@ -61,6 +60,14 @@ class MainActivity : AppCompatActivity() {
         bindScrollListener()
     }
 
+    private fun bindOnClickSearchButton() {
+        binding.searchButton.clicks()
+            .throttleFirst(THROTTLE_TIME)
+            .onEach {
+                mainViewModel.searchMovies(binding.searchEditText.text.toString())
+            }.launchIn(lifecycleScope)
+    }
+
     private fun bindOnClickLatestSearchButton() {
         binding.latestSearchButton.clicks()
             .onEach {
@@ -69,20 +76,25 @@ class MainActivity : AppCompatActivity() {
             }.launchIn(lifecycleScope)
     }
 
-    private fun bindOnClickSearchButton() {
-        binding.searchButton.clicks()
-            .throttleFirst(THROTTLE_TIME)
-            .onEach {
-                mainViewModel.fetchMovies(binding.searchEditText.text.toString(), 1)
-            }.launchIn(lifecycleScope)
-    }
-
     private fun bindScrollListener() {
         binding.movieRecyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
+                binding.searchEditText.clearFocus()
 
+                val lastVisibleItemPosition = (recyclerView.layoutManager as? LinearLayoutManager)
+                    ?.findLastCompletelyVisibleItemPosition()
+
+                val itemTotalCount = recyclerView.adapter?.itemCount
+
+                lastVisibleItemPosition?.let { lastPosition ->
+                    val isLastPosition = lastPosition + 1 == itemTotalCount
+
+                    if (isLastPosition) {
+                        mainViewModel.fetchMovies()
+                    }
+                }
             }
         })
     }
@@ -90,7 +102,9 @@ class MainActivity : AppCompatActivity() {
     private fun subscribeUi() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.movies.collect(movieAdapter::submitList)
+                mainViewModel.movies.collect {
+                    movieAdapter.submitList(it.movies)
+                }
             }
         }
     }
