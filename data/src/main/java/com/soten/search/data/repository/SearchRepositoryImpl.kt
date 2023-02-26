@@ -1,11 +1,10 @@
 package com.soten.search.data.repository
 
 import com.soten.search.data.db.MovieDao
-import com.soten.search.data.db.QueryEntity
-import com.soten.search.data.mapper.dto.MovieDtoMapper
+import com.soten.search.data.mapper.dto.MoviesDtoMapper
 import com.soten.search.data.mapper.entity.EntityMapper
 import com.soten.search.data.network.MovieSearchApi
-import com.soten.search.domain.MovieDomain
+import com.soten.search.domain.MoviesDomain
 import com.soten.search.domain.SearchRepository
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
@@ -14,14 +13,14 @@ import javax.inject.Inject
 internal class SearchRepositoryImpl @Inject constructor(
     private val searchApi: MovieSearchApi,
     private val movieDao: MovieDao,
-    private val movieDtoMapper: MovieDtoMapper,
+    private val moviesDtoMapper: MoviesDtoMapper,
     private val entityMapper: EntityMapper
 ): SearchRepository {
 
-    override suspend fun fetchSearchMovies(query: String, start: Int): List<MovieDomain> {
+    override suspend fun fetchSearchMovies(query: String, start: Int): MoviesDomain {
         return runCatching {
-            searchApi.search(query = query, start = start).items.map { movieDtoMapper.toDomain(it) }
-        }.getOrDefault(emptyList())
+            moviesDtoMapper.toDomain(searchApi.search(query = query, start = start))
+        }.getOrDefault(MoviesDomain.EMPTY)
     }
 
     override suspend fun insertMovie(query: String) {

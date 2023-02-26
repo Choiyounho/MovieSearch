@@ -7,11 +7,8 @@ import com.squareup.moshi.JsonClass
 internal data class MoviesDto(
     @Json(name = "total")
     val total: Int,
+    @Json(name = "start")
+    val start: Int,
     @Json(name = "items")
     val items: List<MovieDto>
-) {
-
-    companion object {
-        val EMPTY = MoviesDto(0, emptyList())
-    }
-}
+)
