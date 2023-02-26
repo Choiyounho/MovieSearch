@@ -13,4 +13,5 @@ ext {
     okHttpVersion = '4.10.0'
     moshiVersion = '1.13.0'
     roomVersion = '2.4.3'
+    coilVersion = '2.2.2'
 }
