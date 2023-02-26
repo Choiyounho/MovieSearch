@@ -1,8 +1,10 @@
 package com.soten.search.ui
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +16,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.soten.search.databinding.ActivityMainBinding
 import com.soten.search.extension.clicks
 import com.soten.search.extension.throttleFirst
+import com.soten.search.ui.RecordActivity.Companion.KEY_QUERY
+import com.soten.search.ui.RecordActivity.Companion.RESULT_CODE
 import com.soten.search.ui.adapter.MovieAdapter
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -29,8 +33,12 @@ class MainActivity : AppCompatActivity() {
 
     private val launch =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == RESULT_OK) {
-
+            if (it.resultCode == RESULT_CODE) {
+                val query = it.data?.extras?.getString(KEY_QUERY)
+                query?.let {
+                    binding.searchEditText.setText(it)
+                    mainViewModel.searchMovies(it)
+                }
             }
         }
 
@@ -64,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         binding.searchButton.clicks()
             .throttleFirst(THROTTLE_TIME)
             .onEach {
+                hideKeyboard()
                 mainViewModel.searchMovies(binding.searchEditText.text.toString())
             }.launchIn(lifecycleScope)
     }
@@ -81,8 +90,6 @@ class MainActivity : AppCompatActivity() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                binding.searchEditText.clearFocus()
-
                 val lastVisibleItemPosition = (recyclerView.layoutManager as? LinearLayoutManager)
                     ?.findLastCompletelyVisibleItemPosition()
 
@@ -96,6 +103,11 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                hideKeyboard()
+            }
         })
     }
 
@@ -106,6 +118,16 @@ class MainActivity : AppCompatActivity() {
                     movieAdapter.submitList(it.movies)
                 }
             }
+        }
+    }
+
+    private fun hideKeyboard() {
+        if (this.currentFocus != null) {
+            val inputMethodManager =
+                this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            inputMethodManager.hideSoftInputFromWindow(this.currentFocus!!.windowToken, 0)
+
+            binding.searchEditText.clearFocus()
         }
     }
 }
