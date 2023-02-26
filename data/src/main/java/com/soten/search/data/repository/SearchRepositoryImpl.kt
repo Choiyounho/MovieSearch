@@ -25,6 +25,13 @@ internal class SearchRepositoryImpl @Inject constructor(
 
     override suspend fun insertMovie(query: String) {
         movieDao.insertQueryEntity(queryEntity = entityMapper.toData(query))
+
+        val movies = movieDao.findAllByQueryEntity().firstOrNull() ?: return
+        if (movies.size > 10) {
+            movieDao.findByOldestQueryEntity()?.let {
+                movieDao.deleteQueryEntity(it)
+            }
+        }
     }
 
     @OptIn(FlowPreview::class)
