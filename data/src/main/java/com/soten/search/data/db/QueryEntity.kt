@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class QueryEntity(
-    val query: String,
     @PrimaryKey
-    val createAt: Long? = null
+    val query: String,
+    val createAt: Long
 )
