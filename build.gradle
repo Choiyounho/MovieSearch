@@ -14,4 +14,5 @@ ext {
     moshiVersion = '1.13.0'
     roomVersion = '2.4.3'
     coilVersion = '2.2.2'
+    coroutineVersion = '1.6.4'
 }
