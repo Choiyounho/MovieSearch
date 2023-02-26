@@ -4,8 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity
-data class MovieEntity(
+data class QueryEntity(
     val query: String,
     @PrimaryKey
-    val createAt: Long
+    val createAt: Long? = null
 )
