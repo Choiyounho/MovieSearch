@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.Flow
 interface MovieDao {
 
     @Query("SELECT * FROM queryentity ORDER BY createAt DESC")
-    fun findAllByMovieEntity(): Flow<List<QueryEntity>>
+    fun findAllByQueryEntity(): Flow<List<QueryEntity>>
 
     @Query("SELECT * FROM queryentity ORDER BY createAt ASC LIMIT 1")
-    fun findByOldestMovieEntity(): QueryEntity?
+    fun findByOldestQueryEntity(): QueryEntity?
 
     @Insert(onConflict = REPLACE)
-    fun insertMovieEntity(movieEntity: QueryEntity)
+    fun insertQueryEntity(queryEntity: QueryEntity)
 }
