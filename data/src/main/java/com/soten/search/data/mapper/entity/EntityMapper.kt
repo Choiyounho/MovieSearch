@@ -11,6 +11,6 @@ internal class EntityMapper @Inject constructor(): Mapper<QueryEntity, String> {
     }
 
     override fun toData(domain: String): QueryEntity {
-        return QueryEntity(domain)
+        return QueryEntity(domain, System.currentTimeMillis())
     }
 }
