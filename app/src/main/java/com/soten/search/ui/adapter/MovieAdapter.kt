@@ -20,7 +20,7 @@ class MovieAdapter(
     companion object {
         private val movieDiffer = object : DiffUtil.ItemCallback<MovieDomain>() {
             override fun areItemsTheSame(oldItem: MovieDomain, newItem: MovieDomain): Boolean {
-                return oldItem.image == newItem.image
+                return oldItem == newItem
             }
 
             override fun areContentsTheSame(oldItem: MovieDomain, newItem: MovieDomain): Boolean {
