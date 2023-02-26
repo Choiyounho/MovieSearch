@@ -6,6 +6,6 @@ data class MoviesDomain(
     val movies: List<MovieDomain>
 ) {
     companion object {
-        val EMPTY = MoviesDomain(0, 1, emptyList())
+        val EMPTY = MoviesDomain(0, -1, emptyList())
     }
 }
