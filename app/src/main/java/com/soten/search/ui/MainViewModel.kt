@@ -3,10 +3,8 @@ package com.soten.search.ui
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.soten.search.domain.MovieDomain
+import com.soten.search.domain.MoviesDomain
 import com.soten.search.domain.SearchRepository
-import com.soten.search.domain.SearchRepository.Companion.DEFAULT_START
-import com.soten.search.extension.addAll
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,14 +17,51 @@ class MainViewModel @Inject constructor(
     private val searchRepository: SearchRepository
 ) : ViewModel() {
 
-    private val _movies = MutableStateFlow<List<MovieDomain>>(emptyList())
+    private val _movies = MutableStateFlow(MoviesDomain.EMPTY)
     val movies = _movies.asStateFlow()
 
-    fun fetchMovies(query: String, start: Int = DEFAULT_START) {
-        _movies.update { emptyList() }
+    private val _query = MutableStateFlow("")
+    private val query = _query.asStateFlow()
+
+    fun searchMovies(query: String) {
+        setQuery(query)
+        _movies.update { MoviesDomain.EMPTY }
         viewModelScope.launch {
-            val result = searchRepository.fetchSearchMovies(query, start)
-            _movies.addAll(result)
+            val result = searchRepository.fetchSearchMovies(query)
+            _movies.update { result }
+        }
+    }
+
+    fun fetchMovies() {
+        viewModelScope.launch {
+            val total = movies.value.total
+            val size = movies.value.movies.size
+
+            val start = if (size >= total) {
+                return@launch
+            } else size + 1
+
+            val result = searchRepository.fetchSearchMovies(query.value, start)
+            addMoviesDomain(result)
+        }
+    }
+
+    private fun setQuery(query: String) {
+        _query.update { query }
+    }
+
+    private fun addMoviesDomain(moviesDomain: MoviesDomain) {
+        _movies.update {
+            val currentList = it.movies.toMutableList()
+            Log.e("current", currentList.size.toString())
+            currentList.addAll(moviesDomain.movies)
+
+            Log.e("addAll", currentList.size.toString())
+            it.copy(
+                moviesDomain.total,
+                moviesDomain.start,
+                currentList.toList()
+            )
         }
     }
 }
