@@ -2,13 +2,13 @@
 Naver Search Api를 이용한 영화 검색 앱 입니다.
 
 ## Architecture
-- Clean & MVVM
+- Clean & MVVM & Modularity
 
 ## Async
 - Coroutine & Flow
 
 ## Library
-- DataBinding
+- ViewBinding
 - Coil
 - Hilt
 - StateFlow
